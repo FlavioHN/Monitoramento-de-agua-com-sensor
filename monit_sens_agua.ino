@@ -44,7 +44,7 @@ void loop() {
   }
  
   else if ((estado_sensor1 == 0) && (estado_sensor2 == 1) && (estado_sensor3 == 1) && (estado_sensor4 == 1)) {
-    Serial.println("Nivel de 70 a 100%" - Meio cheio!");
+    Serial.println("Nivel de 70 a 100% - Meio cheio!");
   }
 
   else if ((estado_sensor1 == 0) && (estado_sensor2 == 0) && (estado_sensor3 == 1) && (estado_sensor4 == 1)) {
