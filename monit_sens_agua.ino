@@ -65,7 +65,9 @@ void loop() {
   lcd.setCursor(0,0);
   lcd.print("Est do sensor 4: ");
   lcd.setCursor(0,1);
-  lcd.print("Estado:" estado_sensor4);
+  lcd.print("Estado: ");
+  lcd.setCursor(11,1);
+  lcd.print(estado_sensor4);
   delay(3000);
 
   if ((estado_sensor1 == 1) && (estado_sensor2 == 1) && (estado_sensor3 == 1) && (estado_sensor4 == 1)) {
