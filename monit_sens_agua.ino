@@ -1,29 +1,40 @@
+#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
+// Inicializa display I2C no endereço 0x27
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-#define Sensor1 5 /* Define sensor1 como pino 5 */
-#define Sensor2 6 /* Define sensor2 como pino 6 */
-#define Sensor3 7 /* Define sensor3 como pino 7 */
-#define Sensor4 8 /* Define sensor2 como pino 8 */
+// Defini os pinos como sensores
+#define Sensor1 16 /* Define sensor1 como pino 16 */
+#define Sensor2 2 /* Define sensor2 como pino 2 */
+#define Sensor3 4 /* Define sensor3 como pino 4 */
+#define Sensor4 15 /* Define sensor2 como pino 15 */
 
-int sensor1 = 5; /* Alto */
-int sensor2 = 6; /* Meio alto */
-int sensor3 = 7; /* Meio baixo */
-int sensor4 = 8; /* Baixo */
+int sensor1 = 16; /* Alto */
+int sensor2 = 2; /* Meio alto */
+int sensor3 = 4; /* Meio baixo */
+int sensor4 = 15; /* Baixo */
 
-/* int estado_inicial = 0; */
+// int estado_inicial = 0;
 
 void setup() {  
+  // Serial.begin(115200);
   Serial.begin(9600);
-  
-  pinMode(Sensor1, INPUT); /* Define o pino do sensor como entrada */
-  pinMode(Sensor2, INPUT); /* Define o pino do sensor como entrada */
-  pinMode(Sensor3, INPUT); /* Define o pino do sensor como entrada */
-  pinMode(Sensor4, INPUT); /* Define o pino do sensor como entrada */
 
+  // Define pinos como entradas
+  pinMode(Sensor1, INPUT);
+  pinMode(Sensor2, INPUT);
+  pinMode(Sensor3, INPUT);
+  pinMode(Sensor4, INPUT);
+
+  // lcd.begin();
   lcd.init();
+  // lcd.backlight();
   lcd.setBacklight(HIGH);
+  lcd.setCursor(0, 0);
+  lcd.print("Monitor init...");
+  delay(10000);
+  lcd.clear();
 }
 
 void loop() {
@@ -32,96 +43,98 @@ void loop() {
   int estado_sensor3 = digitalRead(sensor3);
   int estado_sensor4 = digitalRead(sensor4);
 
-  Serial.print("Estado do sensor 1: ");
-  Serial.println(estado_sensor1);
+  // Serial.print("Estado do sensor 1: ");
+  // Serial.println(estado_sensor1);
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Est do sensor 1: ");
+  lcd.print("Est do sensor 1:");
   lcd.setCursor(0,1);
-  lcd.print("Estado:" estado_sensor1);
+  lcd.print("Estado: ");
+  lcd.setCursor(11,1);
+  lcd.print(estado_sensor1);
   delay(3000);
 
-  Serial.print("Estado do sensor 2: ");
-  Serial.println(estado_sensor2);
+  // Serial.print("Estado do sensor 2: ");
+  // Serial.println(estado_sensor2);
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Est do sensor 2: ");
+  lcd.print("Est do sensor 2:");
   lcd.setCursor(0,1);
-  lcd.print("Estado:" estado_sensor2);
+  lcd.print("Estado: ");
+  lcd.setCursor(11,1);
+  lcd.print(estado_sensor2);
   delay(3000);
   
-  Serial.print("Estado do sensor 3: ");
-  Serial.println(estado_sensor3);
+  // Serial.print("Estado do sensor 3: ");
+  // Serial.println(estado_sensor3);
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Est do sensor 3: ");
+  lcd.print("Est do sensor 3:");
   lcd.setCursor(0,1);
-  lcd.print("Estado:" estado_sensor3);
+  lcd.print("Estado: ");
+  lcd.setCursor(11,1);
+  lcd.print(estado_sensor3);
   delay(3000);
   
-  Serial.print("Estado do sensor 4: ");
-  Serial.println(estado_sensor4);
+  // Serial.print("Estado do sensor 4: ");
+  // Serial.println(estado_sensor4);
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Est do sensor 4: ");
+  lcd.print("Est do sensor 4:");
   lcd.setCursor(0,1);
   lcd.print("Estado: ");
   lcd.setCursor(11,1);
   lcd.print(estado_sensor4);
   delay(3000);
 
-  if ((estado_sensor1 == 1) && (estado_sensor2 == 1) && (estado_sensor3 == 1) && (estado_sensor4 == 1)) {
-    Serial.println("Reservatorio Cheio!");
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Reservatorio:");
-    lcd.setCursor(3,1);
-    lcd.print("CHEIO!");
+  // Determina o nível com base nos sensores ativados
+  String niveldeagua_monitor;
+  String niveldeagua_lcd;
+
+  if (estado_sensor1 == HIGH) {
+    niveldeagua_monitor = "Reservatorio CHEIO!";
+    niveldeagua_lcd = "CHEIO 100%!";
   }
  
-  else if ((estado_sensor1 == 0) && (estado_sensor2 == 1) && (estado_sensor3 == 1) && (estado_sensor4 == 1)) {
-    Serial.println("Nivel de 75 a 100% - Meio cheio!");
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Reservatorio:");
-    lcd.setCursor(0,1);
-    lcd.print("ENTRE 75 E 100%");    
+  else if (estado_sensor2 == HIGH) {
+    niveldeagua_monitor = "Nivel em 75% - Meio cheio!";
+    niveldeagua_lcd = "ENTRE 75 E 99%";    
   }
 
-  else if ((estado_sensor1 == 0) && (estado_sensor2 == 0) && (estado_sensor3 == 1) && (estado_sensor4 == 1)) {
-    Serial.println("Nivel de 50% a 75% - Meio!");
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Reservatorio:");
-    lcd.setCursor(0,1);
-    lcd.print("ENTRE 50 E 75%");
+  else if (estado_sensor3 == HIGH) {
+    niveldeagua_monitor = "Nivel em 50% - Meio!";
+    niveldeagua_lcd = "ENTRE 50 E 74%";
   }
 
-  else if ((estado_sensor1 == 0) && (estado_sensor2 == 0) && (estado_sensor3 == 0) && (estado_sensor4 == 1)) {
-    Serial.println("Nivel em 25% e 50% - Meio baixo!");
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Reservatorio:");
-    lcd.setCursor(0,1);
-    lcd.print("ENTRE 25 E 50%");
-  }
-
-  else if ((estado_sensor1 == 0) && (estado_sensor2 == 0) && (estado_sensor3 == 0) && (estado_sensor4 == 0)) {
-    Serial.println("Nivel abaixo de 25% - Critico!");
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Reservatorio:");
-    lcd.setCursor(0,1);
-    lcd.print("BAIXO - CRITICO!");
+  else if (estado_sensor4 == HIGH) {
+    niveldeagua_monitor = "Nivel em 25% - Baixo!";
+    niveldeagua_lcd = "ENTRE 25 E 49%";
   }
 
   else {
-    Serial.println("ERRO - Verificar sensor!");
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("ERRO DE LEITURA");
-    lcd.setCursor(0,1);
-    lcd.print("Verificar sensor");
+    niveldeagua_monitor = "Nivel abaixo de 25% - Critico!";
+    niveldeagua_lcd = "BAIXO - CRITICO!";
   }
+
+  // Exibir resultado no Display
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Reservatorio:");
+  lcd.setCursor(0,1);
+  lcd.print(niveldeagua_lcd);
+
+  // Exibir resultado via Monitor Serial
+  Serial.println("Estado do sensor 1: ");
+  Serial.print(estado_sensor1);
+  Serial.println("Estado do sensor 2: ");
+  Serial.print(estado_sensor2);
+  Serial.println("Estado do sensor 3: ");
+  Serial.print(estado_sensor3);
+  Serial.println("Estado do sensor 4: ");
+  Serial.print(estado_sensor4);
+  Serial.println("----------------------");
+  Serial.println("Nivel do reservatorio: ");
+  Serial.print(niveldeagua_monitor);
+  
   delay(5000);
 }
