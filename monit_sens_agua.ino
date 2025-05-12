@@ -5,15 +5,15 @@
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // Defini os pinos como sensores
-#define Sensor1 16 /* Define sensor1 como pino 16 */
-#define Sensor2 2 /* Define sensor2 como pino 2 */
-#define Sensor3 4 /* Define sensor3 como pino 4 */
-#define Sensor4 15 /* Define sensor2 como pino 15 */
+#define Sensor1 13 /* Define sensor1 como pino 16 */
+#define Sensor2 12 /* Define sensor2 como pino 2 */
+#define Sensor3 14 /* Define sensor3 como pino 4 */
+#define Sensor4 27 /* Define sensor2 como pino 15 */
 
-int sensor1 = 16; /* Alto */
-int sensor2 = 2; /* Meio alto */
-int sensor3 = 4; /* Meio baixo */
-int sensor4 = 15; /* Baixo */
+int sensor1 = 13; /* Alto */
+int sensor2 = 12; /* Meio alto */
+int sensor3 = 14; /* Meio baixo */
+int sensor4 = 27; /* Baixo */
 
 // int estado_inicial = 0;
 
@@ -47,7 +47,7 @@ void loop() {
   // Serial.println(estado_sensor1);
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Est do sensor 1:");
+  lcd.print("Sensor 1:");
   lcd.setCursor(0,1);
   lcd.print("Estado: ");
   lcd.setCursor(11,1);
@@ -58,7 +58,7 @@ void loop() {
   // Serial.println(estado_sensor2);
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Est do sensor 2:");
+  lcd.print("Sensor 2:");
   lcd.setCursor(0,1);
   lcd.print("Estado: ");
   lcd.setCursor(11,1);
@@ -69,7 +69,7 @@ void loop() {
   // Serial.println(estado_sensor3);
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Est do sensor 3:");
+  lcd.print("Sensor 3:");
   lcd.setCursor(0,1);
   lcd.print("Estado: ");
   lcd.setCursor(11,1);
@@ -80,7 +80,7 @@ void loop() {
   // Serial.println(estado_sensor4);
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Est do sensor 4:");
+  lcd.print("Sensor 4:");
   lcd.setCursor(0,1);
   lcd.print("Estado: ");
   lcd.setCursor(11,1);
@@ -96,12 +96,12 @@ void loop() {
     niveldeagua_lcd = "CHEIO 100%!";
   }
  
-  else if (estado_sensor2 == HIGH) {
+  else if (estado_sensor2 == LOW) {
     niveldeagua_monitor = "Nivel em 75% - Meio cheio!";
     niveldeagua_lcd = "ENTRE 75 E 99%";    
   }
 
-  else if (estado_sensor3 == HIGH) {
+  else if (estado_sensor3 == LOW) {
     niveldeagua_monitor = "Nivel em 50% - Meio!";
     niveldeagua_lcd = "ENTRE 50 E 74%";
   }
