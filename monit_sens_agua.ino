@@ -4,44 +4,39 @@
 // Inicializa display I2C no endereço 0x27
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-// Defini os pinos como sensores
-#define Sensor1 13 /* Define sensor1 como pino 16 */
-#define Sensor2 12 /* Define sensor2 como pino 2 */
-#define Sensor3 14 /* Define sensor3 como pino 4 */
-#define Sensor4 27 /* Define sensor2 como pino 15 */
-
-int sensor1 = 13; /* Alto */
-int sensor2 = 12; /* Meio alto */
-int sensor3 = 14; /* Meio baixo */
-int sensor4 = 27; /* Baixo */
+// Defini pinos dos sensores - válidos para ESP12N (ESP8266)
+const int sensor1Pin = 13; // Alto       -  GPIO12 - D7
+const int sensor2Pin = 12; // Medio alto -  GPIO13 - D6
+const int sensor3Pin = 14; // Meio baixo -  GPIO14 - D5
+const int sensor4Pin = 16; // Baixo      -  GPIO16 - D0
 
 // int estado_inicial = 0;
 
 void setup() {  
-  // Serial.begin(115200);
-  Serial.begin(9600);
+  Serial.begin(115200);
+  // Serial.begin(9600);
 
   // Define pinos como entradas
-  pinMode(Sensor1, INPUT);
-  pinMode(Sensor2, INPUT);
-  pinMode(Sensor3, INPUT);
-  pinMode(Sensor4, INPUT);
+  pinMode(sensor1Pin, INPUT);
+  pinMode(sensor2Pin, INPUT);
+  pinMode(sensor3Pin, INPUT);
+  pinMode(sensor4Pin, INPUT);
 
-  // lcd.begin();
+  lcd.begin(16,2);
   lcd.init();
-  // lcd.backlight();
-  lcd.setBacklight(HIGH);
+  lcd.backlight();
+  // lcd.setBacklight(HIGH);
   lcd.setCursor(0, 0);
   lcd.print("Monitor init...");
-  delay(10000);
+  delay(2000);
   lcd.clear();
 }
 
 void loop() {
-  int estado_sensor1 = digitalRead(sensor1);
-  int estado_sensor2 = digitalRead(sensor2);
-  int estado_sensor3 = digitalRead(sensor3);
-  int estado_sensor4 = digitalRead(sensor4);
+  int estado_sensor1 = digitalRead(sensor1Pin);
+  int estado_sensor2 = digitalRead(sensor2Pin);
+  int estado_sensor3 = digitalRead(sensor3Pin);
+  int estado_sensor4 = digitalRead(sensor4Pin);
 
   // Serial.print("Estado do sensor 1: ");
   // Serial.println(estado_sensor1);
@@ -98,22 +93,22 @@ void loop() {
  
   else if (estado_sensor2 == LOW) {
     niveldeagua_monitor = "Nivel em 75% - Meio cheio!";
-    niveldeagua_lcd = "ENTRE 75 E 99%";    
+    niveldeagua_lcd = "ENTRE 75-99%";    
   }
 
   else if (estado_sensor3 == LOW) {
     niveldeagua_monitor = "Nivel em 50% - Meio!";
-    niveldeagua_lcd = "ENTRE 50 E 74%";
+    niveldeagua_lcd = "ENTRE 50-74%";
   }
 
   else if (estado_sensor4 == HIGH) {
     niveldeagua_monitor = "Nivel em 25% - Baixo!";
-    niveldeagua_lcd = "ENTRE 25 E 49%";
+    niveldeagua_lcd = "ENTRE 25-49%";
   }
 
   else {
     niveldeagua_monitor = "Nivel abaixo de 25% - Critico!";
-    niveldeagua_lcd = "BAIXO - CRITICO!";
+    niveldeagua_lcd = "CRITICO < 25% !";
   }
 
   // Exibir resultado no Display
@@ -124,17 +119,14 @@ void loop() {
   lcd.print(niveldeagua_lcd);
 
   // Exibir resultado via Monitor Serial
-  Serial.println("Estado do sensor 1: ");
-  Serial.print(estado_sensor1);
-  Serial.println("Estado do sensor 2: ");
-  Serial.print(estado_sensor2);
-  Serial.println("Estado do sensor 3: ");
-  Serial.print(estado_sensor3);
-  Serial.println("Estado do sensor 4: ");
-  Serial.print(estado_sensor4);
+  Serial.println("---#---#---#---#---#--");
+  Serial.print("Estado do sensor 1: "); Serial.println(estado_sensor1);
+  Serial.print("Estado do sensor 2: "); Serial.println(estado_sensor2);
+  Serial.print("Estado do sensor 3: "); Serial.println(estado_sensor3);
+  Serial.print("Estado do sensor 4: "); Serial.println(estado_sensor4);
   Serial.println("----------------------");
-  Serial.println("Nivel do reservatorio: ");
-  Serial.print(niveldeagua_monitor);
+  Serial.println("Nivel do reservatorio: " + niveldeagua_monitor);
+  Serial.println("----------------------");
   
   delay(5000);
 }
