@@ -1,5 +1,15 @@
+// #include <WiFi.h>
+// #include <HTTPClient.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
+
+// Configuração da rede wifi
+const char* ssid = "SSID da rede / nome da rede wifi";
+const char* password = "senha da rede wifi";
+// Endereço do servidor
+const char* servidor_http = "http://192.168.0.0:5000/receber"; // ip do servidor que recebera as noticificações
 
 // Inicializa display I2C no endereço 0x27
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -11,6 +21,7 @@ const int sensor3Pin = 14; // Meio baixo -  GPIO14 - D5
 const int sensor4Pin = 16; // Baixo      -  GPIO16 - D0
 
 // int estado_inicial = 0;
+String ultimo_nivel = "";
 
 void setup() {  
   Serial.begin(115200);
@@ -29,7 +40,36 @@ void setup() {
   lcd.setCursor(0, 0);
   lcd.print("Monitor init...");
   delay(2000);
+  
+  // Conecta ao wifi
   lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Conectando WiFi");
+  Serial.print("Conectando ao WiFi")
+
+  WiFi.begin(ssid, password);
+  int tentativas = 0;
+  while (WiFi.status() != WL_CONNECTED && tentativas < 10) {
+    delay(500);
+    Serial.print(".");
+    tentativas++;
+  }
+
+  lcd.clear();
+  if (WiFi.status() == WL_CONNECTED) {
+    lcd.setCursor(0,0);
+    lcd.print("WiFi Conectado");
+    Serial.println("\nConectado ao WiFi");
+    Serial.print("IP -> ");
+    Serial.println(WiFi.localIP());
+  }
+  else {
+    lcd.setCursor(0,0);
+    lcd.print("WiFi Conect erro");
+    Serial.println("\nFalha ao Conectar no WiFi");
+  }
+
+  delay(2000);
 }
 
 void loop() {
@@ -47,7 +87,7 @@ void loop() {
   lcd.print("Estado: ");
   lcd.setCursor(11,1);
   lcd.print(estado_sensor1);
-  delay(3000);
+  delay(2000);
 
   // Serial.print("Estado do sensor 2: ");
   // Serial.println(estado_sensor2);
@@ -58,7 +98,7 @@ void loop() {
   lcd.print("Estado: ");
   lcd.setCursor(11,1);
   lcd.print(estado_sensor2);
-  delay(3000);
+  delay(2000);
   
   // Serial.print("Estado do sensor 3: ");
   // Serial.println(estado_sensor3);
@@ -69,7 +109,7 @@ void loop() {
   lcd.print("Estado: ");
   lcd.setCursor(11,1);
   lcd.print(estado_sensor3);
-  delay(3000);
+  delay(2000);
   
   // Serial.print("Estado do sensor 4: ");
   // Serial.println(estado_sensor4);
@@ -80,7 +120,7 @@ void loop() {
   lcd.print("Estado: ");
   lcd.setCursor(11,1);
   lcd.print(estado_sensor4);
-  delay(3000);
+  delay(2000);
 
   // Determina o nível com base nos sensores ativados
   String niveldeagua_monitor;
@@ -127,6 +167,30 @@ void loop() {
   Serial.println("----------------------");
   Serial.println("Nivel do reservatorio: " + niveldeagua_monitor);
   Serial.println("----------------------");
-  
-  delay(5000);
+  // delay(1000);
+
+  // Envio do alerta caso ocorra mudança de nivel
+  if (niveldeagua_monitor != ultimo_nivel && WiFi.status() == WL_CONNECTED) {
+    String url = servidor_http;
+    url += "?nivel=" + String(niveldeagua_monitor);
+
+    HTTPClient http;
+    http.begin(url);
+    int httpCode = http.GET();
+
+    if (httpCode > 0) {
+      Serial.println("Enviano alerta: " + url);
+      Serial.println("Resposta do servidor: " + http.getString());
+      Serial.println("Código HTTP: " + httpCode);
+    }
+    else {
+      Serial.println("Falha na requisição HTTP");
+      Serial.println("Código HTTP: " + httpCode);
+    }
+
+    http.end();
+    ultimo_nivel = niveldeagua_monitor;
+  }
+
+  delay(10000);
 }
