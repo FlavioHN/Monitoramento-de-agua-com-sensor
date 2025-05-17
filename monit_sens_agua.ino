@@ -45,7 +45,7 @@ void setup() {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Conectando WiFi");
-  Serial.print("Conectando ao WiFi")
+  Serial.print("Conectando ao WiFi");
 
   WiFi.begin(ssid, password);
   int tentativas = 0;
@@ -171,11 +171,14 @@ void loop() {
 
   // Envio do alerta caso ocorra mudança de nivel
   if (niveldeagua_monitor != ultimo_nivel && WiFi.status() == WL_CONNECTED) {
-    String url = servidor_http;
-    url += "?nivel=" + String(niveldeagua_monitor);
-
+    WiFiClient client;
     HTTPClient http;
-    http.begin(url);
+    
+    // String url = servidor_http;
+    //url += "?nivel=" + String(niveldeagua_monitor);
+    String url = "http://192.168.1.100:5000/receber?nivel=" + String(niveldeagua_monitor);
+    
+    http.begin(client, url);
     int httpCode = http.GET();
 
     if (httpCode > 0) {
