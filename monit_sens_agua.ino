@@ -9,8 +9,7 @@
 const char* ssid = "SSID da rede / nome da rede wifi";
 const char* password = "senha da rede wifi";
 // Endereço do servidor
-const char* servidor_http = "http://192.168.0.0:5000/receber"; // ip do servidor que recebera as noticificações
-
+const char* servidor_url = "http://192.168.0.19:5000/receber";
 // Inicializa display I2C no endereço 0x27
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
@@ -39,18 +38,20 @@ void setup() {
   // lcd.setBacklight(HIGH);
   lcd.setCursor(0, 0);
   lcd.print("Monitor init...");
+  Serial.print("Iniciando monitoramento..");
   delay(2000);
   
   // Conecta ao wifi
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Conectando WiFi");
-  Serial.print("Conectando ao WiFi");
-
   WiFi.begin(ssid, password);
+  Serial.print("Conectando WiFi");
   int tentativas = 0;
   while (WiFi.status() != WL_CONNECTED && tentativas < 10) {
     delay(500);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Conectando Wifi");
+    lcd.setCursor(0, 1);
+    lcd.print("...");
     Serial.print(".");
     tentativas++;
   }
@@ -62,6 +63,7 @@ void setup() {
     Serial.println("\nConectado ao WiFi");
     Serial.print("IP -> ");
     Serial.println(WiFi.localIP());
+    delay(2000);
   }
   else {
     lcd.setCursor(0,0);
@@ -173,27 +175,37 @@ void loop() {
   if (niveldeagua_monitor != ultimo_nivel && WiFi.status() == WL_CONNECTED) {
     WiFiClient client;
     HTTPClient http;
-    
+    http.begin(client, servidor_url);
     // String url = servidor_http;
-    //url += "?nivel=" + String(niveldeagua_monitor);
-    String url = "http://192.168.1.100:5000/receber?nivel=" + String(niveldeagua_monitor);
-    
-    http.begin(client, url);
-    int httpCode = http.GET();
+    // url += "?nivel=" + String(niveldeagua_monitor);
+    //String url = "http://192.168.1.100:5000/receber?nivel=" + String(niveldeagua_monitor);
 
-    if (httpCode > 0) {
-      Serial.println("Enviano alerta: " + url);
-      Serial.println("Resposta do servidor: " + http.getString());
-      Serial.println("Código HTTP: " + httpCode);
+    String postData = "nivel=" + String(niveldeagua_monitor);
+    
+    int httpCode = http.POST(postData);
+    String response = http.getString();
+
+    Serial.println("Código:  " + String(httpCode));
+    Serial.println("Resposta: " + response);
+
+    if (httpCode == 200) {     
+      Serial.println("Enviando alerta: " + String(servidor_url));
+      Serial.println("Código HTTP: " + String(httpCode));
+      Serial.println("Resposta do servidor: " + response);
     }
     else {
       Serial.println("Falha na requisição HTTP");
-      Serial.println("Código HTTP: " + httpCode);
+      Serial.println("Código HTTP: " + String(httpCode));
     }
 
     http.end();
     ultimo_nivel = niveldeagua_monitor;
+  
+  } else {
+    Serial.println("Wi-Fi off");
+    lcd.clear();
+    lcd.setCursor(3,0);
+    lcd.print("Wi-Fi OFF");
   }
-
   delay(10000);
 }
