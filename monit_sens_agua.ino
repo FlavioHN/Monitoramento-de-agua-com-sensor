@@ -6,8 +6,8 @@
 #include <LiquidCrystal_I2C.h>
 
 // Configuração da rede wifi
-const char* ssid = "brisa-1899810";
-const char* password = "d6yn8pgr";
+const char* ssid = "REDE WI-FI";
+const char* password = "SENHA DA REDE WI-FI";
 // Endereço do servidor
 const char* servidor_url = "http://192.168.0.19:5000/receber";
 // Inicializa display I2C no endereço 0x27
