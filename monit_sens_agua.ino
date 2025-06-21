@@ -2,12 +2,16 @@
 // #include <HTTPClient.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
+#include <ESP8266WebServer.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
 // Configuração da rede wifi
 const char* ssid = "REDE WI-FI";
 const char* password = "SENHA DA REDE WI-FI";
+// ThingSpeak
+const char* tsapi = "api.thingspeak.com";
+String apikey = "TNKNT83DB64U1Q21";
 // Endereço do servidor
 const char* servidor_url = "http://192.168.0.19:5000/receber";
 // Inicializa display I2C no endereço 0x27
@@ -21,6 +25,7 @@ const int sensor4Pin = 16; // Baixo      -  GPIO16 - D0
 
 // int estado_inicial = 0;
 String ultimo_nivel = "";
+int ultimo_sensor;
 
 void setup() {  
   Serial.begin(115200);
@@ -64,7 +69,7 @@ void setup() {
     Serial.print("IP -> ");
     Serial.println(WiFi.localIP());
     delay(2000);
-  }
+  } 
   else {
     lcd.setCursor(0,0);
     lcd.print("WiFi Conect erro");
@@ -127,30 +132,36 @@ void loop() {
   // Determina o nível com base nos sensores ativados
   String niveldeagua_monitor;
   String niveldeagua_lcd;
+  int enviar_sensor;
 
   if (estado_sensor1 == HIGH) {
     niveldeagua_monitor = "Reservatorio CHEIO!";
     niveldeagua_lcd = "CHEIO 100%!";
+    enviar_sensor = 4;
   }
  
   else if (estado_sensor2 == LOW) {
     niveldeagua_monitor = "Nivel em 75% - Meio cheio!";
-    niveldeagua_lcd = "ENTRE 75-99%";    
+    niveldeagua_lcd = "ENTRE 75-99%";
+    enviar_sensor = 3;
   }
 
   else if (estado_sensor3 == LOW) {
     niveldeagua_monitor = "Nivel em 50% - Meio!";
     niveldeagua_lcd = "ENTRE 50-74%";
+    enviar_sensor = 2;
   }
 
   else if (estado_sensor4 == HIGH) {
     niveldeagua_monitor = "Nivel em 25% - Baixo!";
     niveldeagua_lcd = "ENTRE 25-49%";
+    enviar_sensor = 1;
   }
 
   else {
     niveldeagua_monitor = "Nivel abaixo de 25% - Critico!";
     niveldeagua_lcd = "CRITICO < 25% !";
+    enviar_sensor = 0;
   }
 
   // Exibir resultado no Display
@@ -183,8 +194,9 @@ void loop() {
       // url += "?nivel=" + String(niveldeagua_monitor);
       //String url = "http://192.168.1.100:5000/receber?nivel=" + String(niveldeagua_monitor);
 
+      // Envio para banco de dados
       String postData = "nivel=" + String(niveldeagua_monitor);
-      
+  
       int httpCode = http.POST(postData);
       String response = http.getString();
 
@@ -200,10 +212,27 @@ void loop() {
         Serial.println("Falha na requisição HTTP");
         Serial.println("Código HTTP: " + String(httpCode));
       }
-
       http.end();
       ultimo_nivel = niveldeagua_monitor;
-
+      // Fim do envio para o banco de dados
+      
+      // Envio para o ThingSpeak
+      String requestData = "GET /update?api_key=" + apikey + 
+                            "&field1=" + String(enviar_sensor) +
+                            " HTTP/1.1\r\n" +
+                            "Host: " + tsapi + "\r\n" +
+                            "Connection: close\r\n\r\n";
+      
+      if (client.connect(tsapi, 80)) {
+        Serial.println("Enviando dados ao ThingSpeak");
+        client.print(requestData);
+        Serial.println("Dados enviados");
+        client.stop();
+      } else {
+        Serial.println("Falha na conexão com o ThingSpeak");
+      }
+      ultimo_sensor = enviar_sensor;
+      // Fim do envio para ThingSpeak    
     } else {
       Serial.println("Wi-Fi off");
       lcd.clear();
@@ -211,5 +240,5 @@ void loop() {
       lcd.print("Wi-Fi OFF");
     }
   }
-  delay(10000);
+  delay(20000);
 }
