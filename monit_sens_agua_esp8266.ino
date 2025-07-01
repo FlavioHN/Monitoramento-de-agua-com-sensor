@@ -1,27 +1,26 @@
-// #include <WiFi.h>
-// #include <HTTPClient.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WebServer.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
+// Inicializa display I2C no endereço 0x27
+LiquidCrystal_I2C lcd(0x3F, 20, 4);
+
 // Configuração da rede wifi
-const char* ssid = "REDE WI-FI";
-const char* password = "SENHA DA REDE WI-FI";
+const char* ssid = "brisa-1899810";
+const char* password = "d6yn8pgr";
 // ThingSpeak
 const char* tsapi = "api.thingspeak.com";
 String apikey = "TNKNT83DB64U1Q21";
 // Endereço do servidor
-const char* servidor_url = "http://192.168.0.19:5000/receber";
-// Inicializa display I2C no endereço 0x27
-LiquidCrystal_I2C lcd(0x27, 16, 2);
+const char* servidor_url = "http://192.168.0.19:5050/receber";
 
 // Defini pinos dos sensores - válidos para ESP12N (ESP8266)
-const int sensor4Pin = 13; // Alto       -  GPIO12 - D7
-const int sensor3Pin = 12; // Medio alto -  GPIO13 - D6
-const int sensor2Pin = 14; // Meio baixo -  GPIO14 - D5
-const int sensor1Pin = 16; // Baixo      -  GPIO16 - D0
+const int sensor4Pin = 13; // Alto        -  GPIO12 - D7
+const int sensor3Pin = 12; // Medio alto  -  GPIO13 - D6
+const int sensor2Pin = 14; // Medio baixo -  GPIO14 - D5
+const int sensor1Pin = 16; // Baixo       -  GPIO16 - D0
 
 // int estado_inicial = 0;
 String ultimo_nivel = "";
@@ -29,7 +28,6 @@ int ultimo_sensor;
 
 void setup() {  
   Serial.begin(115200);
-  // Serial.begin(9600);
 
   // Define pinos como entradas
   pinMode(sensor4Pin, INPUT);
@@ -37,14 +35,13 @@ void setup() {
   pinMode(sensor2Pin, INPUT);
   pinMode(sensor1Pin, INPUT);
 
-  lcd.begin(16,2);
+  lcd.begin(20,4);
   lcd.init();
   lcd.backlight();
-  // lcd.setBacklight(HIGH);
   lcd.setCursor(0, 0);
-  lcd.print("Monitor init...");
+  lcd.print("Monitoramento init...");
   Serial.print("Iniciando monitoramento..");
-  delay(2000);
+  delay(3000);
   
   // Conecta ao wifi
   WiFi.begin(ssid, password);
@@ -53,9 +50,9 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED && tentativas < 10) {
     delay(500);
     lcd.clear();
-    lcd.setCursor(0, 0);
+    lcd.setCursor(3, 1);
     lcd.print("Conectando Wifi");
-    lcd.setCursor(0, 1);
+    lcd.setCursor(5, 2);
     lcd.print("...");
     Serial.print(".");
     tentativas++;
@@ -63,19 +60,22 @@ void setup() {
 
   lcd.clear();
   if (WiFi.status() == WL_CONNECTED) {
-    lcd.setCursor(0,0);
+    lcd.setCursor(3,1);
     lcd.print("WiFi Conectado");
-    Serial.println("\nConectado ao WiFi");
+    lcd.setCursor(0,1);
+    lcd.print("IP-> ");
+    lcd.setCursor(5,1);
+    lcd.println(WiFi.localIP());
+    Serial.println("Conectado ao WiFi");
     Serial.print("IP -> ");
     Serial.println(WiFi.localIP());
-    delay(2000);
+    delay(3000);
   } 
   else {
-    lcd.setCursor(0,0);
+    lcd.setCursor(3,0);
     lcd.print("WiFi Conect erro");
-    Serial.println("\nFalha ao Conectar no WiFi");
+    Serial.println("Falha ao Conectar no WiFi");
   }
-  
   delay(2000);
 }
 
@@ -85,49 +85,28 @@ void loop() {
   int estado_sensor2 = digitalRead(sensor2Pin);
   int estado_sensor1 = digitalRead(sensor1Pin);
 
-  // Serial.print("Estado do sensor 1: ");
-  // Serial.println(estado_sensor1);
   lcd.clear();
+  // Sensor 4
   lcd.setCursor(0,0);
-  lcd.print("Sensor 1 - Baixo");
-  lcd.setCursor(0,1);
-  lcd.print("Estado: ");
-  lcd.setCursor(11,1);
-  lcd.print(estado_sensor1);
-  delay(2000);
-
-  // Serial.print("Estado do sensor 2: ");
-  // Serial.println(estado_sensor2);
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Sensor 2 - Meio");
-  lcd.setCursor(0,1);
-  lcd.print("Estado: ");
-  lcd.setCursor(11,1);
-  lcd.print(estado_sensor2);
-  delay(2000);
-  
-  // Serial.print("Estado do sensor 3: ");
-  // Serial.println(estado_sensor3);
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Sensor 3 - MC");
-  lcd.setCursor(0,1);
-  lcd.print("Estado: ");
-  lcd.setCursor(11,1);
-  lcd.print(estado_sensor3);
-  delay(2000);
-  
-  // Serial.print("Estado do sensor 4: ");
-  // Serial.println(estado_sensor4);
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Sensor 4 - Cheio");
-  lcd.setCursor(0,1);
-  lcd.print("Estado: ");
-  lcd.setCursor(11,1);
+  lcd.print("Est. Sensor4 = ");
+  lcd.setCursor(15,0);
   lcd.print(estado_sensor4);
-  delay(2000);
+  // Sensor 3
+  lcd.setCursor(0,1);
+  lcd.print("Est. Sensor3 = ");
+  lcd.setCursor(15,1);
+  lcd.print(estado_sensor3);
+  // Sensor 2
+  lcd.setCursor(0,2);
+  lcd.print("Est. Sensor2 = ");
+  lcd.setCursor(15,2);
+  lcd.print(estado_sensor2);
+  // Sensor 1
+  lcd.setCursor(0,3);
+  lcd.print("Est. Sensor1 = ");
+  lcd.setCursor(15,3);
+  lcd.print(estado_sensor1);
+  delay(10000);
 
   // Determina o nível com base nos sensores ativados
   String niveldeagua_monitor;
@@ -139,25 +118,21 @@ void loop() {
     niveldeagua_lcd = "CHEIO 100%!";
     enviar_sensor = 4;
   }
- 
   else if (estado_sensor3 == LOW) {
     niveldeagua_monitor = "Nivel em 75% - Meio cheio!";
     niveldeagua_lcd = "ENTRE 75-99%";
     enviar_sensor = 3;
   }
-
   else if (estado_sensor2 == LOW) {
     niveldeagua_monitor = "Nivel em 50% - Meio!";
     niveldeagua_lcd = "ENTRE 50-74%";
     enviar_sensor = 2;
   }
-
   else if (estado_sensor1 == HIGH) {
     niveldeagua_monitor = "Nivel em 25% - Baixo!";
     niveldeagua_lcd = "ENTRE 25-49%";
     enviar_sensor = 1;
   }
-
   else {
     niveldeagua_monitor = "Nivel abaixo de 25% - Critico!";
     niveldeagua_lcd = "CRITICO < 25% !";
@@ -166,11 +141,13 @@ void loop() {
 
   // Exibir resultado no Display
   lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Reservatorio:");
-  lcd.setCursor(0,1);
+  lcd.setCursor(3,0);
+  lcd.print("Nivel de agua no");
+  lcd.setCursor(4,1);
+  lcd.print("reservatorio");
+  lcd.setCursor(4,2);
   lcd.print(niveldeagua_lcd);
-  delay(3000);
+  delay(5000);
 
   // Exibir resultado via Monitor Serial
   Serial.println("---#---#---#---#---#--");
@@ -190,18 +167,12 @@ void loop() {
       HTTPClient http;
       http.begin(client, servidor_url);
       http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-      // String url = servidor_http;
-      // url += "?nivel=" + String(niveldeagua_monitor);
-      //String url = "http://192.168.1.100:5000/receber?nivel=" + String(niveldeagua_monitor);
 
       // Envio para banco de dados
       String postData = "nivel=" + String(niveldeagua_monitor);
   
       int httpCode = http.POST(postData);
       String response = http.getString();
-
-      //Serial.println("Código:  " + String(httpCode));
-      //Serial.println("Resposta: " + response);
 
       if (httpCode == 200) {     
         Serial.println("Enviando alerta: " + String(servidor_url));
@@ -240,5 +211,5 @@ void loop() {
       lcd.print("Wi-Fi OFF");
     }
   }
-  delay(20000);
+  delay(30000);
 }
