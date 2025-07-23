@@ -15,12 +15,12 @@ const char* password = "senha-wifi";
 const char* tsapi = "api.thingspeak.com";
 String apikey = "TNKNT83DB64U1Q21";
 // Endereço do servidor
-const char* servidor_url = "http://192.168.0.19:5050/receber";
+const char* servidor_url = "http://192.168.0.4:5050/receber1";
 
 // Defini pinos dos sensores - válidos para ESP32S3 mini
 const int sensor4Pin = 6; // Alto        -  GPIO6
 const int sensor3Pin = 5; // Medio alto  -  GPIO5
-const int sensor2Pin = 4: // Medio baixo -  GPIO4
+const int sensor2Pin = 4; // Medio baixo -  GPIO4
 const int sensor1Pin = 3; // Baixo       -  GPIO3
 
 // int estado_inicial = 0;
@@ -36,7 +36,8 @@ void setup() {
   pinMode(sensor2Pin, INPUT);
   pinMode(sensor1Pin, INPUT);
 
-  lcd.begin(20,4);
+  Wire.begin(8, 9); // SDA = GPIO 8, SCL = GPIO 9
+  //lcd.begin(20,4);
   lcd.init();
   lcd.backlight();
   lcd.setCursor(0, 0);
@@ -142,11 +143,11 @@ void loop() {
 
   // Exibir resultado no Display
   lcd.clear();
-  lcd.setCursor(3,0);
+  lcd.setCursor(2,0);
   lcd.print("Nivel de agua no");
-  lcd.setCursor(4,1);
+  lcd.setCursor(3,1);
   lcd.print("reservatorio");
-  lcd.setCursor(4,2);
+  lcd.setCursor(3,2);
   lcd.print(niveldeagua_lcd);
   delay(5000);
 
@@ -213,3 +214,4 @@ void loop() {
     }
   }
   delay(30000);
+}
